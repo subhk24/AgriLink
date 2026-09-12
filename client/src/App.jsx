@@ -8,6 +8,8 @@ import MandiRatesComparison from './components/MandiRatesComparison';
 import NetProfitCalculator from './components/NetProfitCalculator';
 import PoolingHub from './components/PoolingHub';
 import EscrowTracker from './components/EscrowTracker';
+import { createEscrowDeposit, joinTransportPool } from './services/api';
+import confetti from 'canvas-confetti';
 import { translations } from './translations';
 
 const DEFAULT_USER = {
@@ -98,6 +100,40 @@ export default function App() {
     }
   };
 
+  const handleVoiceBookDeal = async (deal) => {
+    try {
+      await createEscrowDeposit({
+        dealId: deal.dealId,
+        buyerName: deal.buyerName,
+        crop: deal.crop,
+        quantityQuintals: deal.quantityQuintals,
+        agreedRate: deal.agreedRate,
+        totalEscrowAmount: deal.totalEscrowAmount,
+        freightDeduction: deal.freightDeduction,
+        netPayout: deal.netPayout,
+        farmerName: currentUser?.name || 'Harpreet Singh',
+        farmerPhone: currentUser?.phone || '9876512340',
+        farmerBank: currentUser?.bank_account || 'Punjab National Bank - ****4091'
+      });
+
+      await joinTransportPool({
+        farmerName: currentUser?.name || 'Harpreet Singh',
+        crop: deal.crop,
+        quantityQuintals: deal.quantityQuintals,
+        village: currentUser?.village || 'Kakra',
+        clusterId: deal.clusterId || 'cluster-sgr-01'
+      });
+
+      try {
+        confetti({ particleCount: 75, spread: 70, origin: { y: 0.6 } });
+      } catch (e) {}
+
+      setDataRefreshKey(prev => prev + 1);
+    } catch (err) {
+      console.error('Error auto-booking voice deal:', err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
       {/* Navigation Bar with Multilingual Switcher */}
@@ -167,6 +203,7 @@ export default function App() {
         currentDialect={currentDialect}
         setCurrentDialect={setCurrentDialect}
         onActionTrigger={handleVoiceAction}
+        onVoiceBookDeal={handleVoiceBookDeal}
         currentLang={currentLang}
       />
 

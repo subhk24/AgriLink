@@ -13,8 +13,8 @@ router.get('/dialects', (req, res) => {
 
 // Parse spoken voice query
 router.post('/query', (req, res) => {
-  const { spokenText, dialectCode } = req.body;
-  const result = parseVoiceQuery(spokenText, dialectCode || "hi");
+  const { spokenText, dialectCode, context } = req.body;
+  const result = parseVoiceQuery(spokenText, dialectCode || "hi", context || {});
   return res.json({
     success: true,
     dialect: dialectCode || "hi",
