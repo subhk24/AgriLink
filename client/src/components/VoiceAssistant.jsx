@@ -60,10 +60,10 @@ export default function VoiceAssistant({
   const silenceTimerRef = useRef(null);
 
   const samplePrompts = [
-    t.promptShowBuyers || "Show wheat buyers & rates",
-    t.promptSellToBuyer || "Sell 3Q wheat to ITC Limited",
-    t.prompt2 || "Find shared truck in village",
-    t.prompt3 || "Where to get highest profit?"
+    t.promptShowBuyers || "Show me this crop's rates which buyer is giving",
+    t.promptSellToBuyer || "I wanna sell my crop to this person",
+    t.promptSellITC || "Sell 3Q wheat to ITC Limited",
+    t.prompt2 || "Find shared truck in village"
   ];
 
   // Sync dialect with UI language when modal opens
@@ -150,7 +150,15 @@ export default function VoiceAssistant({
         } else if (event.error === 'network') {
           setMicError("Speech recognition network error. Please check your internet connection or type below.");
         } else if (event.error === 'language-not-supported') {
-          setMicError("Selected language dialect is not supported by your browser speech engine.");
+          console.warn(`Dialect not supported by browser speech engine, attempting fallback to hi-IN`);
+          try {
+            recog.lang = 'hi-IN';
+            recog.start();
+            setIsListening(true);
+            return;
+          } catch (e) {
+            setMicError("Speech recognition for this dialect is not supported by your browser. Please use the quick prompt buttons or type below.");
+          }
         }
       };
 
@@ -172,9 +180,19 @@ export default function VoiceAssistant({
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.95;
+      utterance.rate = 0.92;
       const langCode = DIALECT_TO_SPEECH_LANG[currentDialect] || 'en-IN';
       utterance.lang = langCode;
+
+      try {
+        const voices = window.speechSynthesis.getVoices();
+        let voice = voices.find(v => v.lang === langCode || v.lang.replace('_', '-').startsWith(currentDialect));
+        if (!voice && (currentDialect === 'pa' || currentDialect === 'hi')) {
+          voice = voices.find(v => v.lang.includes('hi') || v.lang.includes('IN') || v.name.toLowerCase().includes('india'));
+        }
+        if (voice) utterance.voice = voice;
+      } catch (e) {}
+
       window.speechSynthesis.speak(utterance);
     }
   };
@@ -260,6 +278,10 @@ export default function VoiceAssistant({
           setActiveCrop(res.result.crop || activeCrop);
           setAvailableBuyers(res.result.buyers || null);
           setConfirmedDeal(null);
+          // Automatically navigate to Mandi rates tab as requested
+          if (onActionTrigger) {
+            onActionTrigger('VIEW_MANDI_RATES');
+          }
         } else if (res.result.intent === 'CONFIRM_VOICE_DEAL') {
           setConfirmedDeal(res.result.deal);
           if (onVoiceBookDeal) {
@@ -279,12 +301,11 @@ export default function VoiceAssistant({
   };
 
   const handleSelectBuyer = (buyer) => {
-    const cropName = activeCrop === 'wheat' ? 'wheat' : (activeCrop === 'onion' ? 'onion' : activeCrop);
     const query = currentDialect === 'pa'
-      ? `${buyer.shortName} ਨੂੰ 3 ਕੁਇੰਟਲ ${cropName} ਵੇਚ ਦਿਓ`
+      ? `ਮੈਂ ਆਪਣੀ ਫਸਲ ${buyer.shortName} ਨੂੰ ਵੇਚਣੀ ਹੈ`
       : (currentDialect === 'hi'
-        ? `${buyer.shortName} को 3 क्विंटल ${cropName} बेच दो`
-        : `Sell 3 quintals ${cropName} to ${buyer.shortName}`);
+        ? `मैं इस व्यक्ति (${buyer.shortName}) को अपनी फसल बेचना चाहता हूँ`
+        : `I wanna sell my crop to ${buyer.shortName}`);
     handleQuery(query);
   };
 

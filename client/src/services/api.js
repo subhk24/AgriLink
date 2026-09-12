@@ -1073,6 +1073,16 @@ function parseClientVoiceQuery(spokenText, dialectCode = 'hi', context = {}) {
     query.includes("this buyer") ||
     query.includes("wanna sell") ||
     query.includes("want to sell") ||
+    query.includes("ਬੰਦੇ") ||
+    query.includes("bande") ||
+    query.includes("ਵਿਅਕਤੀ") ||
+    query.includes("vyakti") ||
+    query.includes("ਵੇਚਣੀ") ||
+    query.includes("vechni") ||
+    query.includes("ਵੇਚ ਦਿਓ") ||
+    query.includes("vech dio") ||
+    query.includes("ਸੌਦਾ ਪੱਕਾ") ||
+    query.includes("ਬੁਕਿੰਗ") ||
     query.includes("आईटीसी") ||
     query.includes("ਆਈਟੀਸੀ") ||
     (context.availableBuyers && (query.includes("itc") || query.includes("azadpur") || query.includes("mother") || query.includes("pungrain")));
@@ -1179,6 +1189,15 @@ function parseClientVoiceQuery(spokenText, dialectCode = 'hi', context = {}) {
     query.includes("ਮੁੱਲ") ||
     query.includes("ਦਰ") ||
     query.includes("ਦਰਾਂ") ||
+    query.includes("ਭਾਅ") ||
+    query.includes("ਭਾ") ||
+    query.includes("ਕਿਹੜਾ") ||
+    query.includes("ਕਿਹੜੇ") ||
+    query.includes("ਦੇ ਰਿਹਾ") ||
+    query.includes("ਦੇ ਰਹੇ") ||
+    query.includes("kehda") ||
+    query.includes("keda") ||
+    query.includes("de reha") ||
     query.includes("भाव") ||
     query.includes("भाव दिखाओ") ||
     query.includes("भाव बताओ") ||

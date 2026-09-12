@@ -128,10 +128,16 @@ export default function App() {
       });
 
       try {
-        confetti({ particleCount: 75, spread: 70, origin: { y: 0.6 } });
+        confetti({ particleCount: 90, spread: 80, origin: { y: 0.5 } });
       } catch (e) {}
 
       setDataRefreshKey(prev => prev + 1);
+
+      // Automatically navigate to Orders & Escrow page as requested
+      setActiveTab('orders');
+
+      // Close the voice assistant modal so user lands directly on the orders page
+      setIsVoiceOpen(false);
     } catch (err) {
       console.error('Error auto-booking voice deal:', err);
     }
