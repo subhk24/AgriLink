@@ -3,123 +3,502 @@
 const BASE_URL = '/api';
 
 export async function getHealth() {
-  const res = await fetch(`${BASE_URL}/health`);
-  return res.json();
+  try {
+    const res = await fetch(`${BASE_URL}/health`);
+    if (res.ok) return await res.json();
+  } catch (e) {}
+  return { status: "healthy", project: "AgriLink", mode: "Static Client (GitHub Pages Ready)" };
 }
 
 export async function sendOtp(phone) {
-  const res = await fetch(`${BASE_URL}/auth/send-otp`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phone })
-  });
-  return res.json();
+  try {
+    const res = await fetch(`${BASE_URL}/auth/send-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone })
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {}
+  return { success: true, message: "OTP sent successfully (Demo: 2026)", otp: "2026" };
 }
 
 export async function verifyOtp(data) {
-  const res = await fetch(`${BASE_URL}/auth/verify-otp`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  return res.json();
+  try {
+    const res = await fetch(`${BASE_URL}/auth/verify-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {}
+  return {
+    success: true,
+    user: {
+      id: 'usr-demo-01',
+      name: 'Harpreet Singh',
+      phone: data.phone || '9876512340',
+      village: 'Kakra',
+      district: 'Sangrur',
+      state: 'Punjab',
+      role: 'farmer',
+      is_demo_user: 1
+    }
+  };
 }
 
 export async function loginDemoUser() {
-  const res = await fetch(`${BASE_URL}/auth/login-demo`, {
-    method: 'POST'
-  });
-  return res.json();
+  try {
+    const res = await fetch(`${BASE_URL}/auth/login-demo`, {
+      method: 'POST'
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {}
+  return {
+    success: true,
+    user: {
+      id: 'usr-demo-01',
+      name: 'Harpreet Singh',
+      phone: '9876512340',
+      village: 'Kakra',
+      district: 'Sangrur',
+      state: 'Punjab',
+      role: 'farmer',
+      crops: 'Wheat, Paddy',
+      bank_account: 'Punjab National Bank - ****4091',
+      upi_id: 'harpreet98@okhdfcbank',
+      is_demo_user: 1
+    }
+  };
 }
 
+const DEFAULT_LISTINGS = [
+  {
+    id: "lst-101",
+    user_id: "usr-demo-01",
+    farmer_name: "Harpreet Singh",
+    village: "Kakra",
+    district: "Sangrur",
+    state: "Punjab",
+    phone: "+91 98765-12340",
+    crop: "Wheat (Gehu)",
+    quantity_quintals: 3.0,
+    expected_price_per_q: 2550,
+    quality_grade: "Grade A",
+    defect_score_percent: 3.2,
+    status: "ACTIVE",
+    cluster_id: "cluster-sgr-01",
+    photo_url: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop&q=80",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "lst-102",
+    user_id: "usr-demo-01",
+    farmer_name: "Harpreet Singh",
+    village: "Kakra",
+    district: "Sangrur",
+    state: "Punjab",
+    phone: "+91 98765-12340",
+    crop: "Basmati Paddy",
+    quantity_quintals: 5.0,
+    expected_price_per_q: 3450,
+    quality_grade: "Grade A",
+    defect_score_percent: 2.1,
+    status: "ACTIVE",
+    cluster_id: "cluster-sgr-01",
+    photo_url: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&auto=format&fit=crop&q=80",
+    created_at: new Date().toISOString()
+  }
+];
+
 export async function getProduceListings(params = {}) {
-  const query = new URLSearchParams(params).toString();
-  const res = await fetch(`${BASE_URL}/listings${query ? `?${query}` : ''}`);
-  return res.json();
+  try {
+    const query = new URLSearchParams(params).toString();
+    const res = await fetch(`${BASE_URL}/listings${query ? `?${query}` : ''}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && Array.isArray(data.listings)) return data;
+    }
+  } catch (e) {}
+  
+  const saved = localStorage.getItem('agrilink_listings');
+  if (saved) {
+    try {
+      return { total: JSON.parse(saved).length, listings: JSON.parse(saved) };
+    } catch (err) {}
+  }
+  return { total: DEFAULT_LISTINGS.length, listings: DEFAULT_LISTINGS };
 }
 
 export async function createProduceListing(data) {
-  const res = await fetch(`${BASE_URL}/listings`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  return res.json();
+  try {
+    const res = await fetch(`${BASE_URL}/listings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {}
+
+  const currentRes = await getProduceListings();
+  const current = currentRes.listings || [];
+  const newListing = {
+    id: `lst-${Date.now().toString().slice(-4)}`,
+    user_id: data.userId || 'usr-demo-01',
+    farmer_name: data.farmerName || 'Harpreet Singh',
+    village: data.village || 'Kakra',
+    district: data.district || 'Sangrur',
+    state: data.state || 'Punjab',
+    phone: data.phone || '+91 98765-12340',
+    crop: data.crop || 'Wheat (Gehu)',
+    quantity_quintals: data.quantityQuintals || 3.0,
+    expected_price_per_q: data.expectedPricePerQ || 2550,
+    quality_grade: data.sampleType === 'fresh' ? 'Grade A' : 'Grade B',
+    defect_score_percent: data.sampleType === 'fresh' ? 3.5 : 8.5,
+    status: 'ACTIVE',
+    photo_url: data.photoUrl || "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop&q=80",
+    created_at: new Date().toISOString()
+  };
+  const updated = [newListing, ...current];
+  localStorage.setItem('agrilink_listings', JSON.stringify(updated));
+  return { success: true, listing: newListing };
 }
 
 export async function scanCropQuality(crop, sampleType = 'fresh') {
-  const res = await fetch(`${BASE_URL}/listings/ai-scan`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ crop, sampleType })
-  });
-  return res.json();
+  try {
+    const res = await fetch(`${BASE_URL}/listings/ai-scan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ crop, sampleType })
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {}
+
+  const isFresh = sampleType !== 'spotted';
+  return {
+    success: true,
+    assessment: {
+      grade: isFresh ? 'Grade A' : 'Grade B',
+      confidencePercent: isFresh ? 96.4 : 91.2,
+      defectScorePercent: isFresh ? 2.8 : 7.6,
+      uniformityScore: isFresh ? 94 : 85,
+      moistureEstPercent: isFresh ? 11.8 : 13.5,
+      priceMultiplier: isFresh ? 1.05 : 0.95,
+      suggestedPricePerQ: isFresh ? 2680 : 2420,
+      inspectionTimestamp: new Date().toISOString()
+    }
+  };
 }
 
 export async function calculateNetProfit(cropId, quantityQuintals, isPooledTransport = true) {
-  const res = await fetch(`${BASE_URL}/profit/calculate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cropId, quantityQuintals, isPooledTransport })
+  try {
+    const res = await fetch(`${BASE_URL}/profit/calculate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cropId, quantityQuintals, isPooledTransport })
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {}
+
+  // Instant Mathematical Fallback Engine
+  const q = Math.max(0.5, parseFloat(quantityQuintals) || 3.0);
+  const commodity = FALLBACK_COMMODITIES.find(c => c.id === cropId) || FALLBACK_COMMODITIES[0];
+
+  const results = FALLBACK_MANDIS.map(mandi => {
+    const grossPricePerQ = mandi.prices[commodity.id] || commodity.currentAvgRate;
+    const grossRevenue = grossPricePerQ * q;
+    const soloFreight = Math.round(mandi.distanceKm * 26);
+    const pooledFreight = Math.round((mandi.distanceKm * 14 * (q / 8.0)) + 120);
+    const freightCost = isPooledTransport ? Math.min(soloFreight * 0.58, pooledFreight) : soloFreight;
+    const freightSavings = soloFreight - freightCost;
+    const tollShare = isPooledTransport ? Math.round((mandi.distanceKm > 50 ? 280 : 0) * 0.4) : (mandi.distanceKm > 50 ? 280 : 0);
+    const wastageCost = Math.round(grossRevenue * (mandi.distanceKm / 100) * 0.005 * (isPooledTransport ? 0.55 : 1.0));
+    const cessAmount = Math.round(grossRevenue * (mandi.apmcCessPercent / 100));
+    const unloadingCost = Math.round(35 * q);
+    const totalDeductions = freightCost + tollShare + wastageCost + cessAmount + unloadingCost;
+    const netProfit = grossRevenue - totalDeductions;
+    const netRatePerQuintal = Math.round(netProfit / q);
+
+    return {
+      mandiId: mandi.id,
+      mandiName: mandi.name,
+      mandiType: mandi.type,
+      distanceKm: mandi.distanceKm,
+      badge: mandi.badge || null,
+      grossPricePerQ,
+      grossRevenue,
+      breakdown: {
+        freightCost: Math.round(freightCost),
+        soloFreightComparison: soloFreight,
+        freightSavings: Math.max(0, freightSavings),
+        tollShare,
+        wastageCost,
+        cessAmount,
+        unloadingCost,
+        totalDeductions
+      },
+      netProfit: Math.round(netProfit),
+      netRatePerQuintal,
+      profitPercentage: Number(((netProfit / grossRevenue) * 100).toFixed(1))
+    };
   });
-  return res.json();
+
+  results.sort((a, b) => b.netProfit - a.netProfit);
+  if (results.length > 0) results[0].isRecommendedBest = true;
+
+  return {
+    crop: commodity.name,
+    cropId: commodity.id,
+    quantityQuintals: q,
+    isPooledTransport,
+    destinations: results,
+    topRecommendation: results[0] || null
+  };
 }
 
+const DEFAULT_CLUSTERS = [
+  {
+    id: "cluster-sgr-01",
+    name: "Sangrur-Bhawanigarh Hub",
+    district: "Sangrur",
+    state: "Punjab",
+    radiusKm: 7.5,
+    hubVillage: "Bhawanigarh",
+    assignedVehicle: {
+      vehicleNumber: "PB-13-BB-8924",
+      model: "Tata Ace (Chhota Hathi)",
+      driverName: "Gurpreet Singh",
+      driverPhone: "+91 98721-45012",
+      totalCapacityQuintals: 10.0,
+      currentLoadQuintals: 5.5
+    },
+    farmersInPool: [
+      { name: "Harpreet Singh", village: "Kakra", crop: "Wheat", quantityQuintals: 3.0, status: "LOADED" },
+      { name: "Sukhwinder Singh", village: "Bahadarpur", crop: "Wheat", quantityQuintals: 2.5, status: "SCHEDULED" }
+    ],
+    status: "OPEN_FOR_POOLING",
+    freightSavingsPercent: 42,
+    targetDestination: "ITC e-Choupal Rural Hub"
+  },
+  {
+    id: "cluster-ludh-02",
+    name: "Khanna-Samrala Agri Hub",
+    district: "Ludhiana",
+    state: "Punjab",
+    radiusKm: 6.0,
+    hubVillage: "Khanna",
+    assignedVehicle: {
+      vehicleNumber: "PB-10-CX-7712",
+      model: "Mahindra Bolero Maxi Truck",
+      driverName: "Balwinder Singh",
+      driverPhone: "+91 98140-62190",
+      totalCapacityQuintals: 15.0,
+      currentLoadQuintals: 8.0
+    },
+    farmersInPool: [
+      { name: "Jagjit Singh", village: "Samrala", crop: "Paddy", quantityQuintals: 4.5, status: "LOADED" },
+      { name: "Gurjant Singh", village: "Payal", crop: "Paddy", quantityQuintals: 3.5, status: "SCHEDULED" }
+    ],
+    status: "OPEN_FOR_POOLING",
+    freightSavingsPercent: 46,
+    targetDestination: "Khanna APMC Grain Market"
+  }
+];
+
 export async function getHyperlocalClusters() {
-  const res = await fetch(`${BASE_URL}/pooling/clusters`);
-  return res.json();
+  try {
+    const res = await fetch(`${BASE_URL}/pooling/clusters`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && Array.isArray(data.clusters)) return data;
+    }
+  } catch (e) {}
+
+  const saved = localStorage.getItem('agrilink_clusters');
+  if (saved) {
+    try {
+      return { total: JSON.parse(saved).length, clusters: JSON.parse(saved) };
+    } catch (err) {}
+  }
+  return { total: DEFAULT_CLUSTERS.length, clusters: DEFAULT_CLUSTERS };
 }
 
 export async function joinTransportPool(data) {
-  const res = await fetch(`${BASE_URL}/pooling/join`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  return res.json();
+  try {
+    const res = await fetch(`${BASE_URL}/pooling/join`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {}
+
+  const clustersRes = await getHyperlocalClusters();
+  const clusters = clustersRes.clusters || DEFAULT_CLUSTERS;
+  const target = clusters.find(c => c.id === data.clusterId) || clusters[0];
+  if (target) {
+    const addedQ = parseFloat(data.quantityQuintals) || 2.0;
+    target.assignedVehicle.currentLoadQuintals = Math.min(
+      target.assignedVehicle.totalCapacityQuintals,
+      Number((target.assignedVehicle.currentLoadQuintals + addedQ).toFixed(1))
+    );
+    target.farmersInPool.push({
+      name: data.farmerName || 'Harpreet Singh',
+      village: data.village || 'Kakra',
+      crop: data.crop || 'Wheat',
+      quantityQuintals: addedQ,
+      status: 'CONFIRMED'
+    });
+    localStorage.setItem('agrilink_clusters', JSON.stringify(clusters));
+  }
+  return { success: true, message: "Successfully booked slot in shared transport!" };
 }
 
 export async function dispatchPoolVehicle(clusterId) {
-  const res = await fetch(`${BASE_URL}/pooling/dispatch/${clusterId}`, {
-    method: 'POST'
-  });
-  return res.json();
+  try {
+    const res = await fetch(`${BASE_URL}/pooling/dispatch/${clusterId}`, {
+      method: 'POST'
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {}
+
+  const clustersRes = await getHyperlocalClusters();
+  const clusters = clustersRes.clusters || DEFAULT_CLUSTERS;
+  const target = clusters.find(c => c.id === clusterId);
+  if (target) {
+    target.status = 'DISPATCHED';
+    localStorage.setItem('agrilink_clusters', JSON.stringify(clusters));
+  }
+  return { success: true, message: "Vehicle dispatched to market hub!" };
 }
 
+const DEFAULT_ESCROW = [
+  {
+    id: "tx-esc-8921",
+    buyer_name: "ITC Limited",
+    farmer_name: "Harpreet Singh",
+    farmer_phone: "9876512340",
+    farmer_bank: "Punjab National Bank - ****4091",
+    crop: "Wheat (Grade A)",
+    quantity_quintals: 3.0,
+    agreed_rate_per_q: 2580,
+    total_escrow_amount: 7740,
+    freight_deduction: 180,
+    net_farmer_payout: 7560,
+    status: "DELIVERY_CONFIRMED",
+    utr_number: "PUNBR5202609128921"
+  },
+  {
+    id: "tx-esc-8922",
+    buyer_name: "PUNGRAIN",
+    farmer_name: "Harpreet Singh",
+    farmer_phone: "9876512340",
+    farmer_bank: "Punjab National Bank - ****4091",
+    crop: "Basmati Paddy",
+    quantity_quintals: 5.0,
+    agreed_rate_per_q: 3490,
+    total_escrow_amount: 17450,
+    freight_deduction: 320,
+    net_farmer_payout: 17130,
+    status: "IN_TRANSIT",
+    utr_number: null
+  },
+  {
+    id: "tx-esc-8923",
+    buyer_name: "Adani Agri Logistics",
+    farmer_name: "Harpreet Singh",
+    farmer_phone: "9876512340",
+    farmer_bank: "Punjab National Bank - ****4091",
+    crop: "Mustard Seed",
+    quantity_quintals: 4.0,
+    agreed_rate_per_q: 6120,
+    total_escrow_amount: 24480,
+    freight_deduction: 280,
+    net_farmer_payout: 24200,
+    status: "VAULT_LOCKED",
+    utr_number: null
+  }
+];
+
 export async function getEscrowTransactions(farmerPhone) {
-  const query = farmerPhone ? `?farmerPhone=${encodeURIComponent(farmerPhone)}` : '';
-  const res = await fetch(`${BASE_URL}/escrow${query}`);
-  return res.json();
+  try {
+    const query = farmerPhone ? `?farmerPhone=${encodeURIComponent(farmerPhone)}` : '';
+    const res = await fetch(`${BASE_URL}/escrow${query}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && Array.isArray(data.transactions)) return data;
+    }
+  } catch (e) {}
+
+  const saved = localStorage.getItem('agrilink_escrow');
+  if (saved) {
+    try {
+      return { total: JSON.parse(saved).length, transactions: JSON.parse(saved) };
+    } catch (err) {}
+  }
+  return { total: DEFAULT_ESCROW.length, transactions: DEFAULT_ESCROW };
 }
 
 export async function createEscrowDeposit(data) {
-  const res = await fetch(`${BASE_URL}/escrow/lock`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  return res.json();
+  try {
+    const res = await fetch(`${BASE_URL}/escrow/lock`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {}
+  return { success: true };
 }
 
 export async function dispatchEscrow(id) {
-  const res = await fetch(`${BASE_URL}/escrow/dispatch/${id}`, {
-    method: 'POST'
-  });
-  return res.json();
+  try {
+    const res = await fetch(`${BASE_URL}/escrow/dispatch/${id}`, {
+      method: 'POST'
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {}
+
+  const res = await getEscrowTransactions();
+  const txs = res.transactions || DEFAULT_ESCROW;
+  const target = txs.find(t => t.id === id);
+  if (target) target.status = 'IN_TRANSIT';
+  localStorage.setItem('agrilink_escrow', JSON.stringify(txs));
+  return { success: true };
 }
 
 export async function confirmEscrowDelivery(id) {
-  const res = await fetch(`${BASE_URL}/escrow/confirm-delivery/${id}`, {
-    method: 'POST'
-  });
-  return res.json();
+  try {
+    const res = await fetch(`${BASE_URL}/escrow/confirm-delivery/${id}`, {
+      method: 'POST'
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {}
+
+  const res = await getEscrowTransactions();
+  const txs = res.transactions || DEFAULT_ESCROW;
+  const target = txs.find(t => t.id === id);
+  if (target) target.status = 'DELIVERY_CONFIRMED';
+  localStorage.setItem('agrilink_escrow', JSON.stringify(txs));
+  return { success: true };
 }
 
 export async function releaseInstantDbt(id) {
-  const res = await fetch(`${BASE_URL}/escrow/release-dbt/${id}`, {
-    method: 'POST'
-  });
-  return res.json();
+  try {
+    const res = await fetch(`${BASE_URL}/escrow/release-dbt/${id}`, {
+      method: 'POST'
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {}
+
+  const res = await getEscrowTransactions();
+  const txs = res.transactions || DEFAULT_ESCROW;
+  const target = txs.find(t => t.id === id);
+  if (target) {
+    target.status = 'INSTANT_DBT_RELEASED';
+    target.utr_number = `DBT${Date.now().toString().slice(-10)}`;
+  }
+  localStorage.setItem('agrilink_escrow', JSON.stringify(txs));
+  return { success: true, utrNumber: target?.utr_number };
 }
 
 export async function getLiveMandiTicker() {
