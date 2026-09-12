@@ -72,8 +72,5 @@ cd ../client && npm install
 
 # 2. Run Full Application (Server + Client)
 npm run dev:server  # Runs on http://localhost:5001
-npm run dev:client  # Runs on http://localhost:5173
-```
 
 - **Client Dev Server**: `http://localhost:5173`
-- **Full Production Server**: `http://localhost:5001`
