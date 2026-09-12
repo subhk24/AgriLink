@@ -63,14 +63,4 @@ $$\text{Net Profit} = (\text{Mandi Price} \times \text{Quantity}) - (\text{Freig
 
 ---
 
-## 🏃‍♂️ How to Run
-
-```bash
-# 1. Install dependencies (already installed)
-cd server && npm install
-cd ../client && npm install
-
-# 2. Run Full Application (Server + Client)
-npm run dev:server  # Runs on http://localhost:5001
-
-- **Client Dev Server**: `http://localhost:5173`
+Link: 
