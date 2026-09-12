@@ -39,14 +39,17 @@ export default function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
-  const [currentDialect, setCurrentDialect] = useState('hi');
-  const [dataRefreshKey, setDataRefreshKey] = useState(0);
   const [currentLang, setCurrentLang] = useState(() => {
     return localStorage.getItem('agrilink_lang') || 'en';
   });
+  const [currentDialect, setCurrentDialect] = useState(() => {
+    return localStorage.getItem('agrilink_lang') || 'en';
+  });
+  const [dataRefreshKey, setDataRefreshKey] = useState(0);
 
   const handleLangChange = (newLang) => {
     setCurrentLang(newLang);
+    setCurrentDialect(newLang);
     localStorage.setItem('agrilink_lang', newLang);
   };
 
@@ -67,6 +70,7 @@ export default function App() {
     setCurrentUser(userToSave);
     if (lang) {
       setCurrentLang(lang);
+      setCurrentDialect(lang);
       localStorage.setItem('agrilink_lang', lang);
     }
     localStorage.setItem('agrilink_user', JSON.stringify(userToSave));

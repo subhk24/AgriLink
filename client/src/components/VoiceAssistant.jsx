@@ -6,20 +6,32 @@ import {
   Send,
   Sparkles,
   Check,
-  ShieldCheck
+  ShieldCheck,
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import { queryBhashiniVoice } from '../services/api';
 import { translations } from '../translations';
 
 export const DIALECTS = [
-  { code: "hi", name: "हिन्दी (Hindi)" },
-  { code: "pa", name: "ਪੰਜਾਬੀ (Punjabi)" },
-  { code: "mr", name: "मराठी (Marathi)" },
-  { code: "te", name: "తెలుగు (Telugu)" },
-  { code: "bn", name: "বাংলা (Bengali)" },
-  { code: "gu", name: "ગુજરાતી (Gujarati)" },
-  { code: "en", name: "English" }
+  { code: "hi", name: "हिन्दी (Hindi)", bcp47: "hi-IN" },
+  { code: "pa", name: "ਪੰਜਾਬੀ (Punjabi)", bcp47: "pa-IN" },
+  { code: "en", name: "English", bcp47: "en-IN" },
+  { code: "mr", name: "मराठी (Marathi)", bcp47: "mr-IN" },
+  { code: "te", name: "తెలుగు (Telugu)", bcp47: "te-IN" },
+  { code: "bn", name: "বাংলা (Bengali)", bcp47: "bn-IN" },
+  { code: "gu", name: "ગુજરાતી (Gujarati)", bcp47: "gu-IN" }
 ];
+
+export const DIALECT_TO_SPEECH_LANG = {
+  hi: 'hi-IN',
+  pa: 'pa-IN',
+  en: 'en-IN',
+  mr: 'mr-IN',
+  te: 'te-IN',
+  bn: 'bn-IN',
+  gu: 'gu-IN'
+};
 
 export default function VoiceAssistant({
   isOpen,
@@ -39,7 +51,13 @@ export default function VoiceAssistant({
   const [activeCrop, setActiveCrop] = useState('wheat');
   const [availableBuyers, setAvailableBuyers] = useState(null);
   const [confirmedDeal, setConfirmedDeal] = useState(null);
+  const [micError, setMicError] = useState(null);
+  const [isSpeechSupported, setIsSpeechSupported] = useState(true);
+
   const recognitionRef = useRef(null);
+  const currentTranscriptRef = useRef('');
+  const hasSubmittedRef = useRef(false);
+  const silenceTimerRef = useRef(null);
 
   const samplePrompts = [
     t.promptShowBuyers || "Show wheat buyers & rates",
@@ -48,27 +66,106 @@ export default function VoiceAssistant({
     t.prompt3 || "Where to get highest profit?"
   ];
 
-  // Browser Speech Recognition
+  // Sync dialect with UI language when modal opens
+  useEffect(() => {
+    if (isOpen && currentLang && (!currentDialect || currentDialect !== currentLang)) {
+      if (['en', 'hi', 'pa'].includes(currentLang)) {
+        setCurrentDialect(currentLang);
+      }
+    }
+  }, [isOpen, currentLang]);
+
+  // Browser Speech Recognition Initialization
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
+    if (!SpeechRecognition) {
+      setIsSpeechSupported(false);
+      return;
+    }
+    setIsSpeechSupported(true);
+
+    try {
       const recog = new SpeechRecognition();
       recog.continuous = false;
       recog.interimResults = true;
-      recog.lang = currentDialect === 'pa' ? 'pa-Guru-IN' : (currentDialect === 'mr' ? 'mr-IN' : (currentDialect === 'en' ? 'en-IN' : 'hi-IN'));
+      recog.maxAlternatives = 1;
+      const targetLang = DIALECT_TO_SPEECH_LANG[currentDialect] || 'hi-IN';
+      recog.lang = targetLang;
 
-      recog.onresult = (event) => {
-        let text = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          text += event.results[i][0].transcript;
-        }
-        setTranscript(text);
+      recog.onstart = () => {
+        setIsListening(true);
+        setMicError(null);
+        hasSubmittedRef.current = false;
       };
 
-      recog.onend = () => setIsListening(false);
-      recog.onerror = () => setIsListening(false);
+      recog.onresult = (event) => {
+        let fullText = '';
+        let isFinal = false;
+        for (let i = 0; i < event.results.length; i++) {
+          fullText += event.results[i][0].transcript;
+          if (event.results[i].isFinal) isFinal = true;
+        }
+        fullText = fullText.trim();
+        if (fullText) {
+          setTranscript(fullText);
+          currentTranscriptRef.current = fullText;
+
+          // Auto-submit after pause once speech has arrived
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+          silenceTimerRef.current = setTimeout(() => {
+            if (currentTranscriptRef.current && !hasSubmittedRef.current) {
+              hasSubmittedRef.current = true;
+              try { recog.stop(); } catch (e) {}
+              handleQuery(currentTranscriptRef.current);
+            }
+          }, 1100);
+        }
+      };
+
+      recog.onend = () => {
+        setIsListening(false);
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        const textToSubmit = currentTranscriptRef.current.trim();
+        if (textToSubmit && !hasSubmittedRef.current) {
+          hasSubmittedRef.current = true;
+          handleQuery(textToSubmit);
+        }
+      };
+
+      recog.onerror = (event) => {
+        console.warn('SpeechRecognition error:', event.error);
+        setIsListening(false);
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          setMicError("Microphone permission was blocked. Please click the lock or camera icon in your browser address bar to allow microphone access.");
+        } else if (event.error === 'no-speech') {
+          const textToSubmit = currentTranscriptRef.current.trim();
+          if (textToSubmit && !hasSubmittedRef.current) {
+            hasSubmittedRef.current = true;
+            handleQuery(textToSubmit);
+          } else {
+            setMicError("No speech detected. Please tap the mic and speak clearly.");
+          }
+        } else if (event.error === 'network') {
+          setMicError("Speech recognition network error. Please check your internet connection or type below.");
+        } else if (event.error === 'language-not-supported') {
+          setMicError("Selected language dialect is not supported by your browser speech engine.");
+        }
+      };
+
       recognitionRef.current = recog;
+    } catch (e) {
+      console.error('Failed to initialize SpeechRecognition:', e);
+      setIsSpeechSupported(false);
     }
+
+    return () => {
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch (e) {}
+      }
+    };
   }, [currentDialect]);
 
   const speakText = (text) => {
@@ -76,48 +173,87 @@ export default function VoiceAssistant({
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = 0.95;
-      if (currentDialect === 'pa') utterance.lang = 'pa-IN';
-      else if (currentDialect === 'hi') utterance.lang = 'hi-IN';
-      else if (currentDialect === 'mr') utterance.lang = 'mr-IN';
-      else if (currentDialect === 'te') utterance.lang = 'te-IN';
-      else utterance.lang = 'en-IN';
+      const langCode = DIALECT_TO_SPEECH_LANG[currentDialect] || 'en-IN';
+      utterance.lang = langCode;
       window.speechSynthesis.speak(utterance);
     }
   };
 
-  const handleToggleMic = () => {
-    if (!recognitionRef.current) {
-      alert("Speech recognition is not supported in this browser. Please type your query.");
+  const handleToggleMic = async () => {
+    setMicError(null);
+    if (!isSpeechSupported || !recognitionRef.current) {
+      setMicError("Speech recognition is not supported in this browser. Please type your query below or use Chrome/Safari.");
       return;
     }
 
     if (isListening) {
-      recognitionRef.current.stop();
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {}
       setIsListening(false);
-      if (transcript) handleQuery(transcript);
+      const textToSubmit = currentTranscriptRef.current.trim();
+      if (textToSubmit && !hasSubmittedRef.current) {
+        hasSubmittedRef.current = true;
+        handleQuery(textToSubmit);
+      }
     } else {
       setTranscript('');
+      currentTranscriptRef.current = '';
+      hasSubmittedRef.current = false;
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+
+      // Prompt browser permission if available
+      try {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach(t => t.stop());
+        }
+      } catch (err) {
+        console.warn('Microphone permission check error:', err);
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setMicError("Microphone permission was denied. Please allow microphone access in your browser settings / address bar.");
+          return;
+        }
+      }
+
       try {
         recognitionRef.current.start();
         setIsListening(true);
       } catch (e) {
-        console.error(e);
+        console.warn('Recognition start exception, retrying:', e);
+        try {
+          recognitionRef.current.abort();
+          setTimeout(() => {
+            try {
+              recognitionRef.current.start();
+              setIsListening(true);
+            } catch (err2) {
+              setMicError("Could not start microphone. Please try again or type below.");
+            }
+          }, 120);
+        } catch (err2) {
+          setMicError("Could not start microphone. Please try again or type below.");
+        }
       }
     }
   };
 
   const handleQuery = async (queryText) => {
-    if (!queryText.trim()) return;
+    if (!queryText || !queryText.trim()) return;
     setLoading(true);
     setInputText('');
     setTranscript('');
+    currentTranscriptRef.current = '';
+    setMicError(null);
+
     try {
       const context = {
         activeCrop,
         availableBuyers: availableBuyers ? availableBuyers.map(b => b.shortName) : null
       };
       const res = await queryBhashiniVoice(queryText, currentDialect, context);
-      if (res.result) {
+      if (res && res.result) {
         setLastResponse(res.result);
 
         if (res.result.intent === 'COMPARE_BUYERS') {
@@ -134,9 +270,11 @@ export default function VoiceAssistant({
         speakText(res.result.speechText || res.result.responseMessage);
       }
     } catch (e) {
-      console.error(e);
+      console.error('Voice assistant query error:', e);
+      setMicError("Failed to process query. Please try again or type below.");
     } finally {
       setLoading(false);
+      hasSubmittedRef.current = false;
     }
   };
 
@@ -159,10 +297,14 @@ export default function VoiceAssistant({
         <div className="p-5 text-center border-b border-slate-100 relative">
           <button
             onClick={() => {
+              if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+              if (recognitionRef.current) {
+                try { recognitionRef.current.abort(); } catch (e) {}
+              }
               if ('speechSynthesis' in window) window.speechSynthesis.cancel();
               onClose();
             }}
-            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 text-sm font-bold"
+            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 text-sm font-bold transition-colors"
           >
             ✕
           </button>
@@ -182,7 +324,7 @@ export default function VoiceAssistant({
             <select
               value={currentDialect}
               onChange={(e) => setCurrentDialect(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-slate-900 focus:outline-none focus:ring-1 focus:ring-emerald-500 text-xs"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-slate-900 focus:outline-none focus:ring-1 focus:ring-emerald-500 text-xs font-medium"
             >
               {DIALECTS.map((d) => (
                 <option key={d.code} value={d.code}>{d.name}</option>
@@ -190,27 +332,94 @@ export default function VoiceAssistant({
             </select>
           </div>
 
-          {/* Big Center Microphone Button */}
-          <div className="py-2 text-center space-y-1.5">
-            <button
-              onClick={handleToggleMic}
-              className={`w-13 h-13 rounded-full mx-auto flex items-center justify-center text-white transition-all shadow-sm ${
-                isListening
-                  ? 'bg-rose-600 animate-pulse ring-4 ring-rose-200'
-                  : 'bg-emerald-600 hover:bg-emerald-700 active:scale-95'
-              }`}
-            >
-              {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-            </button>
-            <p className="text-slate-500 text-[11px]">
-              {isListening ? t.micListening : t.micClick}
-            </p>
+          {/* Big Center Microphone Button with visual sound feedback */}
+          <div className="py-2 text-center space-y-2">
+            <div className="relative inline-flex items-center justify-center">
+              {isListening && (
+                <>
+                  <span className="absolute w-20 h-20 rounded-full bg-rose-500/20 animate-ping pointer-events-none" />
+                  <span className="absolute w-16 h-16 rounded-full bg-rose-500/30 animate-pulse pointer-events-none" />
+                </>
+              )}
+              <button
+                onClick={handleToggleMic}
+                title={isListening ? "Tap to stop speaking" : "Tap to speak"}
+                className={`relative z-10 w-14 h-14 rounded-full flex items-center justify-center text-white transition-all shadow-md active:scale-95 ${
+                  isListening
+                    ? 'bg-rose-600 ring-4 ring-rose-200 scale-105'
+                    : 'bg-emerald-600 hover:bg-emerald-700 hover:scale-105'
+                }`}
+              >
+                {isListening ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
+              </button>
+            </div>
+
+            <div>
+              <p className={`text-xs font-semibold ${isListening ? 'text-rose-600 animate-pulse' : 'text-slate-600'}`}>
+                {isListening ? (t.micListening || "Listening... Speak your query now") : (t.micClick || "Tap microphone to speak")}
+              </p>
+              <p className="text-slate-400 text-[10px] mt-0.5">
+                {isListening ? "Stops automatically after you finish speaking" : `Dialect: ${DIALECTS.find(d => d.code === currentDialect)?.name || currentDialect}`}
+              </p>
+            </div>
           </div>
 
-          {/* Live Transcript */}
+          {/* Microphone Error Message Banner */}
+          {micError && (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-start gap-2 animate-in fade-in duration-150">
+              <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 text-[11px] leading-relaxed">
+                {micError}
+              </div>
+              <button
+                onClick={() => setMicError(null)}
+                className="text-rose-400 hover:text-rose-600 font-bold text-xs"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {/* Browser Unsupported Warning */}
+          {!isSpeechSupported && (
+            <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-[11px] flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <span>Voice speech recognition works best on Chrome, Safari, or Edge. You can also type or click the sample queries below.</span>
+            </div>
+          )}
+
+          {/* Live Transcript Banner with 1-Click Send Button */}
           {transcript && (
-            <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-[11px] italic text-center">
-              "{transcript}"
+            <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xl flex items-center justify-between gap-2 shadow-xs animate-in fade-in duration-150">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse flex-shrink-0" />
+                <span className="text-emerald-950 text-xs italic font-medium truncate">
+                  "{transcript}"
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+                  try { recognitionRef.current?.stop(); } catch (e) {}
+                  setIsListening(false);
+                  if (!hasSubmittedRef.current) {
+                    hasSubmittedRef.current = true;
+                    handleQuery(transcript);
+                  }
+                }}
+                className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition-all flex items-center gap-1 shadow-xs flex-shrink-0"
+              >
+                <span>Send</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+
+          {/* Loading Indicator */}
+          {loading && (
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center gap-2 text-slate-600 text-xs">
+              <Loader2 className="w-4 h-4 text-emerald-600 animate-spin" />
+              <span>Analyzing mandi rates & verified buyers...</span>
             </div>
           )}
 

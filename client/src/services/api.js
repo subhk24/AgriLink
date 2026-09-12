@@ -1179,10 +1179,26 @@ function parseClientVoiceQuery(spokenText, dialectCode = 'hi', context = {}) {
     query.includes("ਮੁੱਲ") ||
     query.includes("ਦਰ") ||
     query.includes("ਦਰਾਂ") ||
-    query.includes("ਭਾਅ") ||
     query.includes("भाव") ||
     query.includes("भाव दिखाओ") ||
-    query.includes("भाव बताओ");
+    query.includes("भाव बताओ") ||
+    query.includes("mandi") ||
+    query.includes("ਮੰਡੀ") ||
+    query.includes("मंडी") ||
+    query.includes("wheat") ||
+    query.includes("gehu") ||
+    query.includes("kanak") ||
+    query.includes("ਕਣਕ") ||
+    query.includes("गेहूं") ||
+    query.includes("onion") ||
+    query.includes("pyaz") ||
+    query.includes("tomato") ||
+    query.includes("tamatar") ||
+    query.includes("paddy") ||
+    query.includes("dhan") ||
+    query.includes("mustard") ||
+    query.includes("potato") ||
+    query.includes("aloo");
 
   if (isBuyerQuery) {
     const buyers = CLIENT_BUYERS[crop] || CLIENT_BUYERS.wheat;

@@ -287,7 +287,24 @@ export function parseVoiceQuery(spokenText, dialectCode = "hi", context = {}) {
     query.includes("ਭਾਅ") ||
     query.includes("भाव") ||
     query.includes("भाव दिखाओ") ||
-    query.includes("भाव बताओ");
+    query.includes("भाव बताओ") ||
+    query.includes("mandi") ||
+    query.includes("ਮੰਡੀ") ||
+    query.includes("मंडी") ||
+    query.includes("wheat") ||
+    query.includes("gehu") ||
+    query.includes("kanak") ||
+    query.includes("ਕਣਕ") ||
+    query.includes("गेहूं") ||
+    query.includes("onion") ||
+    query.includes("pyaz") ||
+    query.includes("tomato") ||
+    query.includes("tamatar") ||
+    query.includes("paddy") ||
+    query.includes("dhan") ||
+    query.includes("mustard") ||
+    query.includes("potato") ||
+    query.includes("aloo");
 
   if (isBuyerQuery) {
     return generateBuyerComparisonResponse(crop, dialectCode);
