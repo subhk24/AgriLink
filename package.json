@@ -1,0 +1,15 @@
+{
+  "name": "agrilink-sih2026",
+  "version": "1.0.0",
+  "description": "AgriLink - Smart Market Linkages & Price Discovery for Farmers (SIH 2026 PID26132)",
+  "scripts": {
+    "dev": "(cd server && npm start) & (cd client && npm run dev)",
+    "start": "(cd server && npm start) & (cd client && npm run dev)",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "start:server": "cd server && npm start",
+    "build": "cd client && npm run build"
+  },
+  "author": "Code Crusaders",
+  "license": "MIT"
+}
