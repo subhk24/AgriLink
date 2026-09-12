@@ -176,7 +176,38 @@ export default function VoiceAssistant({
     };
   }, [currentDialect]);
 
-  const speakText = (text) => {
+  const startListeningHandsFree = () => {
+    if (!isSpeechSupported || !recognitionRef.current) return;
+    setTranscript('');
+    currentTranscriptRef.current = '';
+    hasSubmittedRef.current = false;
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+
+    try {
+      recognitionRef.current.abort();
+    } catch (e) {}
+
+    setTimeout(() => {
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch (e) {
+        console.warn('Hands-free listening start notice:', e);
+      }
+    }, 180);
+  };
+
+  // Auto-start listening hands-free whenever modal opens
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        startListeningHandsFree();
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  const speakText = (text, onComplete) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
@@ -193,7 +224,18 @@ export default function VoiceAssistant({
         if (voice) utterance.voice = voice;
       } catch (e) {}
 
+      if (onComplete) {
+        utterance.onend = () => {
+          onComplete();
+        };
+        utterance.onerror = () => {
+          onComplete();
+        };
+      }
+
       window.speechSynthesis.speak(utterance);
+    } else if (onComplete) {
+      setTimeout(onComplete, 1200);
     }
   };
 
@@ -282,14 +324,21 @@ export default function VoiceAssistant({
           if (onActionTrigger) {
             onActionTrigger('VIEW_MANDI_RATES');
           }
+
+          // Hands-Free continuation: As soon as assistant finishes speaking the rates,
+          // automatically turn the mic back on so farmer can say "I wanna sell my crop to this person" hands-free!
+          speakText(res.result.speechText || res.result.responseMessage, () => {
+            startListeningHandsFree();
+          });
         } else if (res.result.intent === 'CONFIRM_VOICE_DEAL') {
           setConfirmedDeal(res.result.deal);
+          speakText(res.result.speechText || res.result.responseMessage);
           if (onVoiceBookDeal) {
             onVoiceBookDeal(res.result.deal);
           }
+        } else {
+          speakText(res.result.speechText || res.result.responseMessage);
         }
-
-        speakText(res.result.speechText || res.result.responseMessage);
       }
     } catch (e) {
       console.error('Voice assistant query error:', e);
@@ -298,6 +347,27 @@ export default function VoiceAssistant({
       setLoading(false);
       hasSubmittedRef.current = false;
     }
+  };
+
+  const handleRunDemo = () => {
+    const q1 = currentDialect === 'pa'
+      ? "ਮੈਨੂੰ ਇਸ ਫਸਲ ਦੇ ਭਾਅ ਦਿਖਾਓ ਕਿਹੜਾ ਖਰੀਦਦਾਰ ਦੇ ਰਿਹਾ ਹੈ"
+      : (currentDialect === 'hi'
+        ? "इस फसल के भाव दिखाओ कौन खरीदार क्या दे रहा है"
+        : "Show me this crop's rates which buyer is giving");
+
+    setInputText(q1);
+    handleQuery(q1);
+
+    setTimeout(() => {
+      const q2 = currentDialect === 'pa'
+        ? "ਮੈਂ ਆਪਣੀ ਫਸਲ ਇਸ ਬੰਦੇ ਨੂੰ ਵੇਚਣੀ ਹੈ"
+        : (currentDialect === 'hi'
+          ? "मैं इस व्यक्ति को अपनी फसल बेचना चाहता हूँ"
+          : "I wanna sell my crop to this person");
+      setInputText(q2);
+      handleQuery(q2);
+    }, 3400);
   };
 
   const handleSelectBuyer = (buyer) => {
@@ -380,9 +450,17 @@ export default function VoiceAssistant({
                 {isListening ? (t.micListening || "Listening... Speak your query now") : (t.micClick || "Tap microphone to speak")}
               </p>
               <p className="text-slate-400 text-[10px] mt-0.5">
-                {isListening ? "Stops automatically after you finish speaking" : `Dialect: ${DIALECTS.find(d => d.code === currentDialect)?.name || currentDialect}`}
+                {isListening ? "🎙️ Hands-free continuous listening active" : `Dialect: ${DIALECTS.find(d => d.code === currentDialect)?.name || currentDialect}`}
               </p>
             </div>
+
+            <button
+              onClick={handleRunDemo}
+              className="mt-1 w-full max-w-xs mx-auto bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 border border-emerald-300 text-emerald-900 py-1.5 px-3 rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+              <span>{currentDialect === 'pa' ? '▶ ਲਾਈਵ ਵੌਇਸ ਡੈਮੋ ਚਲਾਓ (2-Step Auto Demo)' : (currentDialect === 'hi' ? '▶ लाइव वॉयस डेमो चलाएं (2-Step Auto Demo)' : '▶ Run 2-Step Hands-Free Voice Demo')}</span>
+            </button>
           </div>
 
           {/* Microphone Error Message Banner */}
@@ -558,11 +636,24 @@ export default function VoiceAssistant({
                 ))}
               </div>
 
-              <div className="p-2 bg-amber-50 border border-amber-200 rounded-lg text-[10px] text-amber-800 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
-                <span>
-                  Say: <em>"{t.promptSellToBuyer || 'Sell to ITC Limited'}"</em> or tap <strong>{t.sellToThisBuyer || "Sell to Buyer"}</strong>!
-                </span>
+              <div className="p-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-300 rounded-xl text-emerald-950 text-xs flex items-center justify-between gap-2 shadow-xs animate-pulse">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-ping flex-shrink-0" />
+                  <div className="min-w-0">
+                    <span className="font-bold block text-[11px] text-emerald-950 truncate">
+                      {currentDialect === 'pa' ? '🎙️ ਬਿਨਾਂ ਹੱਥ ਲਾਏ ਬੋਲੋ (Step 2 of 2):' : (currentDialect === 'hi' ? '🎙️ बिना हाथ लगाए बोलें (Step 2 of 2):' : '🎙️ Hands-Free Active (Step 2 of 2):')}
+                    </span>
+                    <span className="text-[10px] text-emerald-800 italic truncate block">
+                      "{currentDialect === 'pa' ? 'ਮੈਂ ਆਪਣੀ ਫਸਲ ਇਸ ਬੰਦੇ ਨੂੰ ਵੇਚਣੀ ਹੈ' : (currentDialect === 'hi' ? 'मैं इस व्यक्ति को अपनी फसल बेचना चाहता हूँ' : 'I wanna sell my crop to this person')}"
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleSelectBuyer(availableBuyers[0])}
+                  className="text-[10px] bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white font-bold px-2 py-1 rounded-md flex-shrink-0 shadow-xs"
+                >
+                  {currentDialect === 'pa' ? 'ਵੇਚੋ' : (currentDialect === 'hi' ? 'बेचें' : 'Sell')}
+                </button>
               </div>
             </div>
           )}

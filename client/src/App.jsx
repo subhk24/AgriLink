@@ -216,6 +216,18 @@ export default function App() {
         currentLang={currentLang}
       />
 
+      {/* 5b. Floating Hands-Free Voice Button */}
+      {!isVoiceOpen && (
+        <button
+          onClick={() => setIsVoiceOpen(true)}
+          className="fixed bottom-6 right-6 z-40 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-4 py-3 rounded-full shadow-xl ring-4 ring-emerald-100 flex items-center gap-2.5 transition-all font-semibold text-xs animate-bounce hover:animate-none"
+          title="Hands-Free Voice Trading"
+        >
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-200 animate-ping" />
+          <span>🎙️ {currentLang === 'pa' ? 'ਬੋਲ ਕੇ ਵੇਚੋ (Hands-Free)' : (currentLang === 'hi' ? 'बोलकर बेचें (Hands-Free)' : 'Hands-Free Voice Trading')}</span>
+        </button>
+      )}
+
       {/* 6. Clean Prototype Footer (No database links) */}
       <footer className="bg-white border-t border-slate-200 py-3 px-4 text-center text-xs text-slate-500">
         <div className="max-w-6xl mx-auto flex items-center justify-center">

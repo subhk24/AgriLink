@@ -1073,6 +1073,16 @@ function parseClientVoiceQuery(spokenText, dialectCode = 'hi', context = {}) {
     query.includes("this buyer") ||
     query.includes("wanna sell") ||
     query.includes("want to sell") ||
+    query.includes("sell this") ||
+    query.includes("sell at") ||
+    query.includes("sell this at this") ||
+    query.includes("want to sell this") ||
+    query.includes("wanna sell this") ||
+    query.includes("i want to sell") ||
+    query.includes("i wanna sell") ||
+    query.includes("sell my crop") ||
+    query.includes("best buyer") ||
+    query.includes("highest buyer") ||
     query.includes("ਬੰਦੇ") ||
     query.includes("bande") ||
     query.includes("ਵਿਅਕਤੀ") ||
@@ -1081,6 +1091,9 @@ function parseClientVoiceQuery(spokenText, dialectCode = 'hi', context = {}) {
     query.includes("vechni") ||
     query.includes("ਵੇਚ ਦਿਓ") ||
     query.includes("vech dio") ||
+    query.includes("ਇਸ ਭਾਅ") ||
+    query.includes("ਇਸ ਰੇਟ") ||
+    query.includes("ਇਸ ਨੂੰ") ||
     query.includes("ਸੌਦਾ ਪੱਕਾ") ||
     query.includes("ਬੁਕਿੰਗ") ||
     query.includes("आईटीसी") ||
