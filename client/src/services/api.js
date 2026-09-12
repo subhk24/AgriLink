@@ -1056,16 +1056,28 @@ function parseClientVoiceQuery(spokenText, dialectCode = 'hi', context = {}) {
     query.includes("vech") ||
     query.includes("vechna") ||
     query.includes("vecho") ||
+    query.includes("vechni") ||
+    query.includes("vech do") ||
+    query.includes("vech dio") ||
+    query.includes("bech do") ||
     query.includes("बेच") ||
     query.includes("बेचना") ||
     query.includes("बेचो") ||
+    query.includes("बेच दो") ||
     query.includes("बिक्री") ||
     query.includes("ਵੇਚ") ||
     query.includes("ਵੇਚਣਾ") ||
+    query.includes("ਵੇਚਣੀ") ||
     query.includes("ਵੇਚੋ") ||
+    query.includes("ਵੇਚ ਦਿਓ") ||
+    query.includes("ਬੇਚ") ||
     query.includes("book") ||
     query.includes("lock") ||
     query.includes("confirm") ||
+    query.includes("deal") ||
+    query.includes("sauda") ||
+    query.includes("ਸੌਦਾ") ||
+    query.includes("सौदा") ||
     query.includes("le lo") ||
     query.includes("de do") ||
     query.includes("de diyo") ||
@@ -1085,12 +1097,10 @@ function parseClientVoiceQuery(spokenText, dialectCode = 'hi', context = {}) {
     query.includes("highest buyer") ||
     query.includes("ਬੰਦੇ") ||
     query.includes("bande") ||
+    query.includes("is bande") ||
     query.includes("ਵਿਅਕਤੀ") ||
     query.includes("vyakti") ||
-    query.includes("ਵੇਚਣੀ") ||
-    query.includes("vechni") ||
-    query.includes("ਵੇਚ ਦਿਓ") ||
-    query.includes("vech dio") ||
+    query.includes("is vyakti") ||
     query.includes("ਇਸ ਭਾਅ") ||
     query.includes("ਇਸ ਰੇਟ") ||
     query.includes("ਇਸ ਨੂੰ") ||
@@ -1098,7 +1108,32 @@ function parseClientVoiceQuery(spokenText, dialectCode = 'hi', context = {}) {
     query.includes("ਬੁਕਿੰਗ") ||
     query.includes("आईटीसी") ||
     query.includes("ਆਈਟੀਸੀ") ||
-    (context.availableBuyers && (query.includes("itc") || query.includes("azadpur") || query.includes("mother") || query.includes("pungrain")));
+    (context.availableBuyers && (
+      query.includes("itc") ||
+      query.includes("azadpur") ||
+      query.includes("mother") ||
+      query.includes("pungrain") ||
+      query.includes("adani") ||
+      query.includes("yes") ||
+      query.includes("haan") ||
+      query.includes("hanji") ||
+      query.includes("haanji") ||
+      query.includes("ok") ||
+      query.includes("okay") ||
+      query.includes("done") ||
+      query.includes("kar do") ||
+      query.includes("kar de") ||
+      query.includes("theek") ||
+      query.includes("person") ||
+      query.includes("buyer") ||
+      query.includes("kharidar") ||
+      query.includes("kharidaar") ||
+      query.includes("ਖਰੀਦਦਾਰ") ||
+      query.includes("pehla") ||
+      query.includes("first") ||
+      query.includes("top") ||
+      query.includes("best")
+    ));
 
   if (isSellingQuery) {
     const buyers = CLIENT_BUYERS[crop] || CLIENT_BUYERS.wheat;
@@ -1179,106 +1214,44 @@ function parseClientVoiceQuery(spokenText, dialectCode = 'hi', context = {}) {
     };
   }
 
-  const isBuyerQuery =
-    query.includes("buyer") ||
-    query.includes("kharidar") ||
-    query.includes("kharidaar") ||
-    query.includes("kharedidar") ||
-    query.includes("खरीदार") ||
-    query.includes("ਖਰੀਦਦਾਰ") ||
-    query.includes("giving") ||
-    query.includes("who is") ||
-    query.includes("kaun") ||
-    query.includes("koun") ||
-    query.includes("kisne") ||
-    query.includes("which") ||
-    query.includes("compare") ||
-    query.includes("rate") ||
-    query.includes("daam") ||
-    query.includes("bhav") ||
-    query.includes("kimat") ||
-    query.includes("bhaav") ||
-    query.includes("price") ||
-    query.includes("ਮੁੱਲ") ||
-    query.includes("ਦਰ") ||
-    query.includes("ਦਰਾਂ") ||
-    query.includes("ਭਾਅ") ||
-    query.includes("ਭਾ") ||
-    query.includes("ਕਿਹੜਾ") ||
-    query.includes("ਕਿਹੜੇ") ||
-    query.includes("ਦੇ ਰਿਹਾ") ||
-    query.includes("ਦੇ ਰਹੇ") ||
-    query.includes("kehda") ||
-    query.includes("keda") ||
-    query.includes("de reha") ||
-    query.includes("भाव") ||
-    query.includes("भाव दिखाओ") ||
-    query.includes("भाव बताओ") ||
-    query.includes("mandi") ||
-    query.includes("ਮੰਡੀ") ||
-    query.includes("मंडी") ||
-    query.includes("wheat") ||
-    query.includes("gehu") ||
-    query.includes("kanak") ||
-    query.includes("ਕਣਕ") ||
-    query.includes("गेहूं") ||
-    query.includes("onion") ||
-    query.includes("pyaz") ||
-    query.includes("tomato") ||
-    query.includes("tamatar") ||
-    query.includes("paddy") ||
-    query.includes("dhan") ||
-    query.includes("mustard") ||
-    query.includes("potato") ||
-    query.includes("aloo");
+  // All other queries in Voice Assistant default directly to comparing buyers & showing mandi rates
+  const buyers = CLIENT_BUYERS[crop] || CLIENT_BUYERS.wheat;
+  const topBuyer = buyers[0];
+  const secondBuyer = buyers[1] || buyers[0];
 
-  if (isBuyerQuery) {
-    const buyers = CLIENT_BUYERS[crop] || CLIENT_BUYERS.wheat;
-    const topBuyer = buyers[0];
-    const secondBuyer = buyers[1] || buyers[0];
+  const cropNames = {
+    wheat: { en: "Wheat", hi: "गेहूं", pa: "ਕਣਕ", mr: "गहू" },
+    onion: { en: "Red Onion", hi: "प्याज", pa: "ਪਿਆਜ਼", mr: "कांदा" },
+    tomato: { en: "Hybrid Tomato", hi: "टमाटर", pa: "ਟਮਾਟਰ", mr: "टोमॅटो" },
+    paddy: { en: "Basmati Paddy", hi: "धान (बासमती)", pa: "ਬਾਸਮਤੀ ਝੋਨਾ", mr: "धान" },
+    mustard: { en: "Mustard", hi: "सरसों", pa: "ਸਰ੍ਹੋਂ", mr: "मोहरी" },
+    potato: { en: "Potato", hi: "आलू", pa: "ਆਲੂ", mr: "बटाटा" }
+  };
+  const cropLabel = (cropNames[crop] && cropNames[crop][dialectCode]) || cropNames[crop]?.en || crop;
 
-    const cropNames = {
-      wheat: { en: "Wheat", hi: "गेहूं", pa: "ਕਣਕ", mr: "गहू" },
-      onion: { en: "Red Onion", hi: "प्याज", pa: "ਪਿਆਜ਼", mr: "कांदा" },
-      tomato: { en: "Hybrid Tomato", hi: "टमाटर", pa: "ਟਮਾਟਰ", mr: "टोमॅटो" },
-      paddy: { en: "Basmati Paddy", hi: "धान (बासमती)", pa: "ਬਾਸਮਤੀ ਝੋਨਾ", mr: "धान" },
-      mustard: { en: "Mustard", hi: "सरसों", pa: "ਸਰ੍ਹੋਂ", mr: "मोहरी" },
-      potato: { en: "Potato", hi: "आलू", pa: "ਆਲੂ", mr: "बटाटा" }
-    };
-    const cropLabel = (cropNames[crop] && cropNames[crop][dialectCode]) || cropNames[crop]?.en || crop;
-
-    let text = "";
-    let spokenAudioText = "";
-    if (dialectCode === 'pa') {
-      text = `${cropLabel} ਦੇ ਮੁੱਖ ਖਰੀਦਦਾਰ: ${topBuyer.shortName} ਸਭ ਤੋਂ ਵੱਧ ${topBuyer.rateFormatted} ਦੇ ਰਿਹਾ ਹੈ, ਅਤੇ ${secondBuyer.shortName} ${secondBuyer.rateFormatted} ਦੇ ਰਿਹਾ ਹੈ। ਤੁਸੀਂ ਕਿਸ ਖਰੀਦਦਾਰ ਨੂੰ ਵੇਚਣਾ ਚਾਹੁੰਦੇ ਹੋ?`;
-      spokenAudioText = `${cropLabel} ਲਈ ਸਭ ਤੋਂ ਵੱਧ ਭਾਅ ${topBuyer.shortName} ਵੱਲੋਂ ${topBuyer.price} ਰੁਪਏ ਪ੍ਰਤੀ ਕੁਇੰਟਲ ਮਿਲ ਰਿਹਾ ਹੈ। ਕੀ ਤੁਸੀਂ ${topBuyer.shortName} ਨੂੰ ਵੇਚਣਾ ਚਾਹੁੰਦੇ ਹੋ? ਬੋਲੋ ${topBuyer.shortName} ਨੂੰ ਵੇਚ ਦਿਓ।`;
-    } else if (dialectCode === 'en') {
-      text = `Top buyers offering rates for ${cropLabel}: ${topBuyer.shortName} offers ${topBuyer.rateFormatted} (Highest), and ${secondBuyer.shortName} offers ${secondBuyer.rateFormatted}. Which buyer would you like to sell to?`;
-      spokenAudioText = `Here are the top buyers for ${cropLabel}. ${topBuyer.shortName} is giving the highest rate at ${topBuyer.price} rupees per quintal. Would you like to sell to ${topBuyer.shortName}? Just say "Sell to ${topBuyer.shortName}".`;
-    } else {
-      text = `${cropLabel} के प्रमुख खरीदार: ${topBuyer.shortName} सबसे अधिक ${topBuyer.rateFormatted} दे रहा है, और ${secondBuyer.shortName} ${secondBuyer.rateFormatted} दे रहा है। आप किस खरीदार को बेचना चाहते हैं?`;
-      spokenAudioText = `किसान भाई, ${cropLabel} के लिए सबसे अधिक भाव ${topBuyer.shortName} ₹${topBuyer.price} प्रति क्विंटल दे रहा है। क्या आप ${topBuyer.shortName} को बेचना चाहते हैं? बोलें "${topBuyer.shortName} को बेच दो"।`;
-    }
-
-    return {
-      intent: "COMPARE_BUYERS",
-      crop,
-      cropLabel,
-      displayRate: topBuyer.rateFormatted,
-      bestBuyer: topBuyer.shortName,
-      buyers,
-      responseMessage: text,
-      speechText: spokenAudioText,
-      action: "PROMPT_BUYER_SELECTION"
-    };
+  let text = "";
+  let spokenAudioText = "";
+  if (dialectCode === 'pa') {
+    text = `${cropLabel} ਦੇ ਮੁੱਖ ਖਰੀਦਦਾਰ: ${topBuyer.shortName} ਸਭ ਤੋਂ ਵੱਧ ${topBuyer.rateFormatted} ਦੇ ਰਿਹਾ ਹੈ, ਅਤੇ ${secondBuyer.shortName} ${secondBuyer.rateFormatted} ਦੇ ਰਿਹਾ ਹੈ। ਤੁਸੀਂ ਕਿਸ ਖਰੀਦਦਾਰ ਨੂੰ ਵੇਚਣਾ ਚਾਹੁੰਦੇ ਹੋ?`;
+    spokenAudioText = `${cropLabel} ਲਈ ਸਭ ਤੋਂ ਵੱਧ ਭਾਅ ${topBuyer.shortName} ਵੱਲੋਂ ${topBuyer.price} ਰੁਪਏ ਪ੍ਰਤੀ ਕੁਇੰਟਲ ਮਿਲ ਰਿਹਾ ਹੈ। ਕੀ ਤੁਸੀਂ ${topBuyer.shortName} ਨੂੰ ਵੇਚਣਾ ਚਾਹੁੰਦੇ ਹੋ? ਬੋਲੋ ${topBuyer.shortName} ਨੂੰ ਵੇਚ ਦਿਓ।`;
+  } else if (dialectCode === 'en') {
+    text = `Top buyers offering rates for ${cropLabel}: ${topBuyer.shortName} offers ${topBuyer.rateFormatted} (Highest), and ${secondBuyer.shortName} offers ${secondBuyer.rateFormatted}. Which buyer would you like to sell to?`;
+    spokenAudioText = `Here are the top buyers for ${cropLabel}. ${topBuyer.shortName} is giving the highest rate at ${topBuyer.price} rupees per quintal. Would you like to sell to ${topBuyer.shortName}? Just say "Sell to ${topBuyer.shortName}".`;
+  } else {
+    text = `${cropLabel} के प्रमुख खरीदार: ${topBuyer.shortName} सबसे अधिक ${topBuyer.rateFormatted} दे रहा है, और ${secondBuyer.shortName} ${secondBuyer.rateFormatted} दे रहा है। आप किस खरीदार को बेचना चाहते हैं?`;
+    spokenAudioText = `किसान भाई, ${cropLabel} के लिए सबसे अधिक भाव ${topBuyer.shortName} ₹${topBuyer.price} प्रति क्विंटल दे रहा है। क्या आप ${topBuyer.shortName} को बेचना चाहते हैं? बोलें "${topBuyer.shortName} को बेच दो"।`;
   }
 
-  // Generic fallback
   return {
-    intent: "GENERAL_HELP",
-    responseMessage: "नमस्ते किसान भाई! आप बोलकर किसी भी फसल का ताज़ा भाव पूछ सकते हैं, खरीदारों की तुलना कर सकते हैं, और सीधे बोलकर फसल बेच सकते हैं।",
-    speechText: "Kisan bhai, aap bolkar mandi bhav pooch sakte hain ya direct buyer ko fasal bech sakte hain.",
-    action: "SHOW_PROMPTS"
+    intent: "COMPARE_BUYERS",
+    crop,
+    cropLabel,
+    displayRate: topBuyer.rateFormatted,
+    bestBuyer: topBuyer.shortName,
+    buyers,
+    responseMessage: text,
+    speechText: spokenAudioText,
+    action: "VIEW_MANDI_RATES"
   };
 }
 

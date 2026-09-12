@@ -135,9 +135,6 @@ export default function App() {
 
       // Automatically navigate to Orders & Escrow page as requested
       setActiveTab('orders');
-
-      // Close the voice assistant modal so user lands directly on the orders page
-      setIsVoiceOpen(false);
     } catch (err) {
       console.error('Error auto-booking voice deal:', err);
     }

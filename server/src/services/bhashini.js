@@ -234,16 +234,28 @@ export function parseVoiceQuery(spokenText, dialectCode = "hi", context = {}) {
     query.includes("vech") ||
     query.includes("vechna") ||
     query.includes("vecho") ||
+    query.includes("vechni") ||
+    query.includes("vech do") ||
+    query.includes("vech dio") ||
+    query.includes("bech do") ||
     query.includes("बेच") ||
     query.includes("बेचना") ||
     query.includes("बेचो") ||
+    query.includes("बेच दो") ||
     query.includes("बिक्री") ||
     query.includes("ਵੇਚ") ||
     query.includes("ਵੇਚਣਾ") ||
+    query.includes("ਵੇਚਣੀ") ||
     query.includes("ਵੇਚੋ") ||
+    query.includes("ਵੇਚ ਦਿਓ") ||
+    query.includes("ਬੇਚ") ||
     query.includes("book") ||
     query.includes("lock") ||
     query.includes("confirm") ||
+    query.includes("deal") ||
+    query.includes("sauda") ||
+    query.includes("ਸੌਦਾ") ||
+    query.includes("सौदा") ||
     query.includes("le lo") ||
     query.includes("de do") ||
     query.includes("de diyo") ||
@@ -263,12 +275,10 @@ export function parseVoiceQuery(spokenText, dialectCode = "hi", context = {}) {
     query.includes("highest buyer") ||
     query.includes("ਬੰਦੇ") ||
     query.includes("bande") ||
+    query.includes("is bande") ||
     query.includes("ਵਿਅਕਤੀ") ||
     query.includes("vyakti") ||
-    query.includes("ਵੇਚਣੀ") ||
-    query.includes("vechni") ||
-    query.includes("ਵੇਚ ਦਿਓ") ||
-    query.includes("vech dio") ||
+    query.includes("is vyakti") ||
     query.includes("ਇਸ ਭਾਅ") ||
     query.includes("ਇਸ ਰੇਟ") ||
     query.includes("ਇਸ ਨੂੰ") ||
@@ -276,7 +286,32 @@ export function parseVoiceQuery(spokenText, dialectCode = "hi", context = {}) {
     query.includes("ਬੁਕਿੰਗ") ||
     query.includes("आईटीसी") ||
     query.includes("ਆਈਟੀਸੀ") ||
-    (context.availableBuyers && (query.includes("itc") || query.includes("azadpur") || query.includes("mother") || query.includes("pungrain")));
+    (context.availableBuyers && (
+      query.includes("itc") ||
+      query.includes("azadpur") ||
+      query.includes("mother") ||
+      query.includes("pungrain") ||
+      query.includes("adani") ||
+      query.includes("yes") ||
+      query.includes("haan") ||
+      query.includes("hanji") ||
+      query.includes("haanji") ||
+      query.includes("ok") ||
+      query.includes("okay") ||
+      query.includes("done") ||
+      query.includes("kar do") ||
+      query.includes("kar de") ||
+      query.includes("theek") ||
+      query.includes("person") ||
+      query.includes("buyer") ||
+      query.includes("kharidar") ||
+      query.includes("kharidaar") ||
+      query.includes("ਖਰੀਦਦਾਰ") ||
+      query.includes("pehla") ||
+      query.includes("first") ||
+      query.includes("top") ||
+      query.includes("best")
+    ));
 
   if (isSellingQuery) {
     return generateVoiceDealConfirmation(query, dialectCode, crop, context);
@@ -387,8 +422,8 @@ export function parseVoiceQuery(spokenText, dialectCode = "hi", context = {}) {
     return generateEscrowResponse(dialectCode);
   }
 
-  // Fallback default helpful greeting
-  return generateHelpResponse(dialectCode);
+  // Default for voice assistant when not matching transport/escrow: compare buyers giving rates
+  return generateBuyerComparisonResponse(crop, dialectCode);
 }
 
 // Step 1 Generator: Compare buyers giving rates for crop
@@ -439,7 +474,7 @@ export function generateBuyerComparisonResponse(crop, lang = "hi") {
     buyers,
     responseMessage: text,
     speechText: spokenAudioText,
-    action: "PROMPT_BUYER_SELECTION"
+    action: "VIEW_MANDI_RATES"
   };
 }
 
