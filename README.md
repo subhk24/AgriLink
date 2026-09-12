@@ -25,4 +25,4 @@ Smallholder farmers suffer from **unfair farm-gate price realization** and **exp
 
 ---
 
-Link: 
+**Live Prototype**: [https://subhk24.github.io/AgriLink/](https://subhk24.github.io/AgriLink/) 
