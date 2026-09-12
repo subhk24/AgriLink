@@ -522,6 +522,174 @@ export async function releaseInstantDbt(id) {
   return { success: true, utrNumber: target?.utr_number };
 }
 
+export async function raiseEscrowDispute(id, reason = "Quality defect score mismatch") {
+  try {
+    const res = await fetch(`${BASE_URL}/escrow/dispute/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason })
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {}
+
+  const res = await getEscrowTransactions();
+  const txs = res.transactions || DEFAULT_ESCROW;
+  const target = txs.find(t => t.id === id);
+  if (target) {
+    target.status = 'DISPUTE_ARBITRATION';
+    target.dispute_reason = reason;
+    target.dispute_date = new Date().toISOString();
+  }
+  localStorage.setItem('agrilink_escrow', JSON.stringify(txs));
+  return { success: true, message: "Dispute registered. Escrow locked in neutral APMC arbitration." };
+}
+
+export async function resolveEscrowDispute(id, settledAmount) {
+  try {
+    const res = await fetch(`${BASE_URL}/escrow/resolve-dispute/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ settledAmount })
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {}
+
+  const res = await getEscrowTransactions();
+  const txs = res.transactions || DEFAULT_ESCROW;
+  const target = txs.find(t => t.id === id);
+  if (target) {
+    target.status = 'INSTANT_DBT_RELEASED';
+    if (settledAmount) target.net_farmer_payout = settledAmount;
+    target.utr_number = `DBT-ARB-${Date.now().toString().slice(-8)}`;
+    target.dispute_resolved = true;
+  }
+  localStorage.setItem('agrilink_escrow', JSON.stringify(txs));
+  return { success: true, message: "Dispute settled amicably and DBT released." };
+}
+
+const DEFAULT_WAREHOUSES = [
+  {
+    id: "wh-sgr-01",
+    name: "Sangrur Central Warehouse Corporation (CWC)",
+    wdraRegNumber: "WDRA/PB/SGR/2023/014",
+    type: "WDRA Accredited Dry Grain Silo",
+    village: "Kakra Road",
+    district: "Sangrur",
+    state: "Punjab",
+    distanceKm: 8.5,
+    totalCapacityQuintals: 8000,
+    availableSpaceQuintals: 3200,
+    monthlyRentPerQ: 8.0,
+    enwrEligible: true,
+    maxAdvancePercent: 75,
+    specs: "Hermetic seal • Automated aeration • Moisture sensor control",
+    contact: "+91 1672-230491"
+  },
+  {
+    id: "wh-khn-02",
+    name: "Khanna Agro Cold Link & Dry Warehouse",
+    wdraRegNumber: "WDRA/PB/KHN/2022/089",
+    type: "Integrated Cold & Dry Grain Terminal",
+    village: "G.T. Road",
+    district: "Ludhiana",
+    state: "Punjab",
+    distanceKm: 42.0,
+    totalCapacityQuintals: 15000,
+    availableSpaceQuintals: 5800,
+    monthlyRentPerQ: 12.0,
+    enwrEligible: true,
+    maxAdvancePercent: 75,
+    specs: "Multi-commodity cold chain (2°C - 8°C) • Nitrogen purge",
+    contact: "+91 1628-228140"
+  },
+  {
+    id: "wh-ptl-03",
+    name: "Patiala District Cooperative Warehouse",
+    wdraRegNumber: "WDRA/PB/PTL/2024/031",
+    type: "State Warehousing Corp (SWC)",
+    village: "Nabha Bypass",
+    district: "Patiala",
+    state: "Punjab",
+    distanceKm: 34.0,
+    totalCapacityQuintals: 6500,
+    availableSpaceQuintals: 2100,
+    monthlyRentPerQ: 7.5,
+    enwrEligible: true,
+    maxAdvancePercent: 75,
+    specs: "Govt insured • Direct rail siding link • Zero rodent loss",
+    contact: "+91 175-221980"
+  }
+];
+
+export async function getStorageWarehouses() {
+  const saved = localStorage.getItem('agrilink_warehouses');
+  if (saved) {
+    try {
+      return { warehouses: JSON.parse(saved) };
+    } catch (e) {}
+  }
+  return { warehouses: DEFAULT_WAREHOUSES };
+}
+
+export async function bookWarehouseStorage(bookingData) {
+  const current = await getStorageWarehouses();
+  const whs = current.warehouses ? [...current.warehouses] : [...DEFAULT_WAREHOUSES];
+  const target = whs.find(w => w.id === bookingData.warehouseId) || whs[0];
+  if (target) {
+    target.availableSpaceQuintals = Math.max(0, target.availableSpaceQuintals - (bookingData.quantityQuintals || 3));
+  }
+  localStorage.setItem('agrilink_warehouses', JSON.stringify(whs));
+
+  const receipts = JSON.parse(localStorage.getItem('agrilink_enwr_receipts') || '[]');
+  const newReceipt = {
+    receiptId: `ENWR-PB-${Date.now().toString().slice(-6)}`,
+    farmerName: bookingData.farmerName || 'Harpreet Singh',
+    warehouseName: target.name,
+    crop: bookingData.crop || 'Wheat (Grade A)',
+    quantityQuintals: bookingData.quantityQuintals || 3.0,
+    estimatedValue: (bookingData.quantityQuintals || 3.0) * 2580,
+    maxEligibleLoan: Math.round(((bookingData.quantityQuintals || 3.0) * 2580) * 0.75),
+    pledged: false,
+    created_at: new Date().toISOString()
+  };
+  receipts.unshift(newReceipt);
+  localStorage.setItem('agrilink_enwr_receipts', JSON.stringify(receipts));
+
+  return { success: true, receipt: newReceipt };
+}
+
+export async function getENWRReceipts() {
+  const receipts = JSON.parse(localStorage.getItem('agrilink_enwr_receipts') || '[]');
+  if (receipts.length === 0) {
+    const demoReceipt = {
+      receiptId: "ENWR-PB-849102",
+      farmerName: "Harpreet Singh",
+      warehouseName: "Sangrur Central Warehouse Corporation (CWC)",
+      crop: "Wheat (Grade A)",
+      quantityQuintals: 3.0,
+      estimatedValue: 7740,
+      maxEligibleLoan: 5715,
+      pledged: false,
+      created_at: new Date().toISOString()
+    };
+    receipts.push(demoReceipt);
+    localStorage.setItem('agrilink_enwr_receipts', JSON.stringify(receipts));
+  }
+  return { receipts };
+}
+
+export async function pledgeENWRReceipt(receiptId) {
+  const receipts = JSON.parse(localStorage.getItem('agrilink_enwr_receipts') || '[]');
+  const target = receipts.find(r => r.receiptId === receiptId) || receipts[0];
+  if (target) {
+    target.pledged = true;
+    target.disbursedAmount = target.maxEligibleLoan || 5715;
+    target.bankUtr = `PNB-ENWR-${Date.now().toString().slice(-8)}`;
+  }
+  localStorage.setItem('agrilink_enwr_receipts', JSON.stringify(receipts));
+  return { success: true, disbursedAmount: target?.maxEligibleLoan || 5715, utr: target?.bankUtr };
+}
+
 export async function getLiveMandiTicker() {
   const res = await fetch(`${BASE_URL}/mandi/ticker`);
   return res.json();

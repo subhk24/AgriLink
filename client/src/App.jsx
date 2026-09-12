@@ -27,13 +27,6 @@ const DEFAULT_USER = {
 };
 
 export default function App() {
-  // If user visits /database or /db directly, show the separate Database page
-  const isDatabaseRoute = window.location.pathname === '/database' || window.location.pathname === '/db';
-
-  if (isDatabaseRoute) {
-    return <DatabasePage />;
-  }
-
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('agrilink_user');
     if (saved) {
@@ -62,6 +55,12 @@ export default function App() {
       localStorage.setItem('agrilink_user', JSON.stringify(DEFAULT_USER));
     }
   }, []);
+
+  // If user visits /database or /db directly, show the separate Database page
+  const isDatabaseRoute = window.location.pathname === '/database' || window.location.pathname === '/db';
+  if (isDatabaseRoute) {
+    return <DatabasePage />;
+  }
 
   const handleLoginSuccess = (user, lang) => {
     const userToSave = user || DEFAULT_USER;

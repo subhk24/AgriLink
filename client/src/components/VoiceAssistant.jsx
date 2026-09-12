@@ -2,14 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Mic,
   MicOff,
-  Volume2,
-  X,
   ArrowRight,
   Send,
   Sparkles,
   Check,
-  ShieldCheck,
-  Truck
+  ShieldCheck
 } from 'lucide-react';
 import { queryBhashiniVoice } from '../services/api';
 import { translations } from '../translations';

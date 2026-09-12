@@ -197,10 +197,35 @@ export const translations = {
     dealDetailsLabel: "Confirmed Deal Details:",
     totalEscrowLocked: "Total Escrow Locked",
     sharedTruckBooked: "Shared Truck Booked",
-    pickupFromVillage: "Pickup from Kakra village",
     viewOrdersBtn: "View Order in Escrow Tracker",
-    
-    // Scanner
+
+    // Sale Window & Warehousing
+    liveRatesTab: "Live Mandi Comparison",
+    saleWindowTab: "Sale Window & Storage Advisory",
+    sellNowVsStore: "Sell Now vs. Store Advisory",
+    projected30Day: "30-Day Forecast",
+    projected60Day: "60-Day Forecast",
+    holdingCostLabel: "Est. Holding & Storage Cost",
+    netStorageGain: "Net Gain by Storing",
+    recommendationHold: "Recommended: Store in WDRA Warehouse (Peak Value in 45-60 Days)",
+    recommendationSell: "Recommended: Sell Immediately at Current High Rate",
+    transportPoolingTab: "Hyperlocal Transport Pooling",
+    storagePledgeTab: "WDRA Warehouses & e-NWR Advance",
+    warehousesTitle: "WDRA Accredited Warehouses & Cold Storage",
+    warehousesSubtitle: "Safe storage with electronic Negotiable Warehouse Receipts (e-NWR) & 75% instant bank advance",
+    enwrPledgeTitle: "e-NWR Instant Cash Advance",
+    enwrPledgeDesc: "Prevent distress selling! Get 75% advance credit directly to your bank account against stored produce.",
+    bookStorageBtn: "Book Storage Space",
+    applyPledgeBtn: "Disburse 75% Advance (PNB)",
+    storageBookedSuccess: "Storage Slot Confirmed & e-NWR Generated!",
+    pledgeDisbursedSuccess: "₹5,715 Instant Advance Disbursed to PNB (****4091)!",
+    disputeTitle: "Grievance Redressal & Quality Dispute",
+    disputeDesc: "Transparent APMC/FPO neutral arbitration with AI inspection audit trail",
+    raiseDisputeBtn: "Raise Grievance / Dispute",
+    disputeReasonLabel: "Select Dispute Category",
+    disputeStatusFrozen: "Escrow Frozen in Arbitration",
+    resolveDisputeBtn: "Approve Amicable Settlement",
+
     scannerTitle: "AI Crop Quality Scanner",
     scannerSubtitle: "Computer Vision & Defect Detection Simulation",
     selectSample: "Select Sample Crop",
@@ -409,10 +434,35 @@ export const translations = {
     dealDetailsLabel: "पुष्टि किए गए सौदे का विवरण:",
     totalEscrowLocked: "कुल एस्क्रो राशि",
     sharedTruckBooked: "साझा गाड़ी बुक",
-    pickupFromVillage: "काकरा गांव से पिकअप",
     viewOrdersBtn: "एस्क्रो ट्रैकर में ऑर्डर देखें",
-    
-    // Scanner
+
+    // Sale Window & Warehousing
+    liveRatesTab: "लाइव मंडी तुलना",
+    saleWindowTab: "बिक्री समय एवं मूल्य रुझान",
+    sellNowVsStore: "अभी बेचें या गोदाम में रखें?",
+    projected30Day: "30 दिनों का अनुमान",
+    projected60Day: "60 दिनों का अनुमान",
+    holdingCostLabel: "अनुमानित भंडारण लागत",
+    netStorageGain: "भंडारण करने पर शुद्ध लाभ",
+    recommendationHold: "सलाह: डब्ल्यूडीआरए गोदाम में रखें (45-60 दिनों में अधिक लाभ)",
+    recommendationSell: "सलाह: वर्तमान उच्च भाव पर अभी बेचें",
+    transportPoolingTab: "हाइपरलोकल साझा वाहन",
+    storagePledgeTab: "डब्ल्यूडीआरए गोदाम एवं ई-एनडब्ल्यूआर ऋण",
+    warehousesTitle: "डब्ल्यूडीआरए मान्यता प्राप्त गोदाम एवं कोल्ड स्टोरेज",
+    warehousesSubtitle: "ई-एनडब्ल्यूआर रसीद और 75% तत्काल बैंक ऋण के साथ सुरक्षित भंडारण",
+    enwrPledgeTitle: "ई-एनडब्ल्यूआर तत्काल नकद ऋण",
+    enwrPledgeDesc: "मजबूरी में कम दाम पर फसल न बेचें! जमा फसल पर 75% तत्काल नकद अपने बैंक खाते में पाएं।",
+    bookStorageBtn: "गोदाम में जगह बुक करें",
+    applyPledgeBtn: "75% नकद अग्रिम लें (पीएनबी)",
+    storageBookedSuccess: "गोदाम स्लॉट बुक और ई-एनडब्ल्यूआर रसीद जारी!",
+    pledgeDisbursedSuccess: "₹5,715 तत्काल अग्रिम पीएनबी खाते में क्रेडिट हुआ!",
+    disputeTitle: "शिकायत निवारण एवं गुणवत्ता विवाद",
+    disputeDesc: "एआई जांच ऑडिट के साथ निष्पक्ष मध्यस्थता प्रणाली",
+    raiseDisputeBtn: "शिकायत / विवाद दर्ज करें",
+    disputeReasonLabel: "विवाद की श्रेणी चुनें",
+    disputeStatusFrozen: "एस्क्रो राशि मध्यस्थता में रोकी गई",
+    resolveDisputeBtn: "समझौता स्वीकार करें",
+
     scannerTitle: "एआई फसल गुणवत्ता स्कैनर",
     scannerSubtitle: "कंप्यूटर विजन और दोष पहचान प्रणाली",
     selectSample: "नमूना फसल चुनें",
@@ -621,8 +671,35 @@ export const translations = {
     dealDetailsLabel: "ਪੁਸ਼ਟੀ ਕੀਤੇ ਸੌਦੇ ਦਾ ਵੇਰਵਾ:",
     totalEscrowLocked: "ਕੁੱਲ ਐਸਕਰੋ ਰਕਮ",
     sharedTruckBooked: "ਸਾਂਝੀ ਗੱਡੀ ਬੁੱਕ",
-    pickupFromVillage: "ਕਾਕੜਾ ਪਿੰਡ ਤੋਂ ਪਿਕਅੱਪ",
     viewOrdersBtn: "ਐਸਕਰੋ ਟਰੈਕਰ ਵਿੱਚ ਆਰਡਰ ਦੇਖੋ",
+
+    // Sale Window & Warehousing
+    liveRatesTab: "ਲਾਈਵ ਮੰਡੀ ਤੁਲਨਾ",
+    saleWindowTab: "ਵੇਚਣ ਦਾ ਸਮਾਂ ਅਤੇ ਭਾਅ ਦਾ ਰੁਝਾਨ",
+    sellNowVsStore: "ਹੁਣੇ ਵੇਚੋ ਜਾਂ ਗੋਦਾਮ ਵਿੱਚ ਰੱਖੋ?",
+    projected30Day: "30 ਦਿਨਾਂ ਦਾ ਅਨੁਮਾਨ",
+    projected60Day: "60 ਦਿਨਾਂ ਦਾ ਅਨੁਮਾਨ",
+    holdingCostLabel: "ਅਨੁਮਾਨਿਤ ਗੋਦਾਮ ਖਰਚਾ",
+    netStorageGain: "ਗੋਦਾਮ ਵਿੱਚ ਰੱਖਣ 'ਤੇ ਸ਼ੁੱਧ ਲਾਭ",
+    recommendationHold: "ਸਲਾਹ: ਡਬਲਿਊਡੀਆਰਏ ਗੋਦਾਮ ਵਿੱਚ ਰੱਖੋ (45-60 ਦਿਨਾਂ ਵਿੱਚ ਵੱਧ ਮੁਨਾਫਾ)",
+    recommendationSell: "ਸਲਾਹ: ਮੌਜੂਦਾ ਉੱਚੇ ਭਾਅ 'ਤੇ ਹੁਣੇ ਵੇਚੋ",
+    transportPoolingTab: "ਸਾਂਝੀ ਗੱਡੀ (ਟਰਾਂਸਪੋਰਟ ਪੂਲਿੰਗ)",
+    storagePledgeTab: "ਗੋਦਾਮ ਅਤੇ ਈ-ਐਨਡਬਲਿਊਆਰ ਕਰਜ਼ਾ",
+    warehousesTitle: "ਮਾਨਤਾ ਪ੍ਰਾਪਤ ਗੋਦਾਮ ਅਤੇ ਕੋਲਡ ਸਟੋਰੇਜ",
+    warehousesSubtitle: "ਈ-ਐਨਡਬਲਿਊਆਰ ਰਸੀਦ ਅਤੇ 75% ਤੁਰੰਤ ਬੈਂਕ ਕਰਜ਼ੇ ਨਾਲ ਸੁਰੱਖਿਅਤ ਗੋਦਾਮ",
+    enwrPledgeTitle: "ਈ-ਐਨਡਬਲਿਊਆਰ ਤੁਰੰਤ ਨਕਦ ਪੇਸ਼ਗੀ",
+    enwrPledgeDesc: "ਮਜਬੂਰੀ ਵਿੱਚ ਸਸਤੀ ਫਸਲ ਨਾ ਵੇਚੋ! ਜਮ੍ਹਾਂ ਫਸਲ 'ਤੇ 75% ਤੁਰੰਤ ਨਕਦ ਪੇਸ਼ਗੀ ਆਪਣੇ ਬੈਂਕ ਖਾਤੇ ਵਿੱਚ ਪਾਓ।",
+    bookStorageBtn: "ਗੋਦਾਮ ਵਿੱਚ ਥਾਂ ਬੁੱਕ ਕਰੋ",
+    applyPledgeBtn: "75% ਨਕਦ ਪੇਸ਼ਗੀ ਲਵੋ (ਪੀਐਨਬੀ)",
+    storageBookedSuccess: "ਗੋਦਾਮ ਸਲਾਟ ਬੁੱਕ ਅਤੇ ਈ-ਐਨਡਬਲਿਊਆਰ ਜਾਰੀ!",
+    pledgeDisbursedSuccess: "₹5,715 ਤੁਰੰਤ ਪੇਸ਼ਗੀ ਪੀਐਨਬੀ ਖਾਤੇ ਵਿੱਚ ਜਮ੍ਹਾਂ ਹੋ ਗਈ!",
+    disputeTitle: "ਸ਼ਿਕਾਇਤ ਨਿਵਾਰਨ ਅਤੇ ਗੁਣਵੱਤਾ ਝਗੜਾ",
+    disputeDesc: "ਏਆਈ ਜਾਂਚ ਆਡਿਟ ਨਾਲ ਨਿਰਪੱਖ ਫੈਸਲਾ ਪ੍ਰਣਾਲੀ",
+    raiseDisputeBtn: "ਸ਼ਿਕਾਇਤ / ਝਗੜਾ ਦਰਜ ਕਰੋ",
+    disputeReasonLabel: "ਝਗੜੇ ਦੀ ਸ਼੍ਰੇਣੀ ਚੁਣੋ",
+    disputeStatusFrozen: "ਐਸਕਰੋ ਰਕਮ ਰੋਕੀ ਗਈ ਹੈ",
+    resolveDisputeBtn: "ਸਮਝੌਤਾ ਪ੍ਰਵਾਨ ਕਰੋ",
+
 
     
     // Scanner
@@ -689,6 +766,9 @@ export function translateStatus(status, lang = 'en') {
         return 'ਰਵਾਨਾ';
       case 'CONFIRMED':
         return 'ਪੁਸ਼ਟੀ ਹੋਈ';
+      case 'DISPUTE_ARBITRATION':
+      case 'DISPUTE_HELD':
+        return 'ਝਗੜਾ ਵਿਚਾਰ ਅਧੀਨ (Dispute)';
       default:
         return status.replace(/_/g, ' ');
     }
@@ -711,6 +791,9 @@ export function translateStatus(status, lang = 'en') {
         return 'रवाना';
       case 'CONFIRMED':
         return 'पुष्टि की गई';
+      case 'DISPUTE_ARBITRATION':
+      case 'DISPUTE_HELD':
+        return 'मध्यस्थता में विवाद (Dispute)';
       default:
         return status.replace(/_/g, ' ');
     }
