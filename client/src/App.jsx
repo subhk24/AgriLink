@@ -183,6 +183,7 @@ export default function App() {
         {activeTab === 'transport' && (
           <PoolingHub
             currentLang={currentLang}
+            currentUser={currentUser}
           />
         )}
 

@@ -28,7 +28,7 @@ import {
   translateVehicle
 } from '../translations';
 
-export default function PoolingHub({ currentLang = 'en' }) {
+export default function PoolingHub({ currentLang = 'en', currentUser = {} }) {
   const t = translations[currentLang] || translations.en;
   const [activeHubTab, setActiveHubTab] = useState('transport'); // 'transport' | 'storage'
 
@@ -94,8 +94,8 @@ export default function PoolingHub({ currentLang = 'en' }) {
     try {
       const res = await joinTransportPool({
         clusterId: selectedCluster.id,
-        farmerName: farmerName || "New Farmer",
-        village: village || selectedCluster.hubVillage,
+        farmerName: farmerName || currentUser?.name || "Harpreet Singh",
+        village: village || currentUser?.village || selectedCluster.hubVillage,
         crop,
         quantityQuintals: quantity
       });

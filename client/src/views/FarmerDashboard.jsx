@@ -155,6 +155,14 @@ export default function FarmerDashboard({
           </button>
 
           <button
+            onClick={() => onNavigateToTab('transport')}
+            className="text-xs font-medium bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+          >
+            <Truck className="w-3.5 h-3.5 text-teal-600" />
+            <span>{t.transport || "Shared Transport"}</span>
+          </button>
+
+          <button
             onClick={() => setIsListingModalOpen(true)}
             className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
           >
@@ -180,8 +188,16 @@ export default function FarmerDashboard({
           <span className="text-slate-400 text-[11px]">{t.directVerified}</span>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200">
-          <span className="text-slate-500 block">{t.sharedTransportTitle}</span>
+        <div
+          onClick={() => onNavigateToTab('transport')}
+          className="bg-white p-4 rounded-xl border border-slate-200 hover:border-teal-400 hover:shadow-xs transition-all cursor-pointer group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-slate-500 block">{t.sharedTransportTitle}</span>
+            <span className="text-[10px] text-teal-600 group-hover:underline font-semibold flex items-center gap-0.5">
+              <span>View Hub</span> &rarr;
+            </span>
+          </div>
           <span className="text-base font-bold text-teal-700 mt-1 block">
             {translateVehicle("Tata Ace", currentLang)} (42% {t.savedFreight})
           </span>
